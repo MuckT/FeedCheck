@@ -26,7 +26,7 @@ def file_walk(s):
 				txtFiles.append(f)
 	return txtFiles
 	
-#Makes a Dictionary Entry e.g. "stops.txt":[["...","...","..."]["...","...","..."]]
+#Makes a Dictionary Entry e.g. "{stops.txt":[["...","...","..."]["...","...","..."]]}
 def to_dict(s):
 	f_dict = {}
 	f_list = []
