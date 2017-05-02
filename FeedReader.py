@@ -143,7 +143,7 @@ def write_to_file(s):
 	else:
 		pass
 		
-#Initialize Feed		
+#Initialize Fuctions / Feed		
 start()
 
 #Script Samples
