@@ -13,3 +13,5 @@ Aim to build out to a more robust feed validation tool.
 
 ### Wish List
 - Add items you'd like to see in the wish-list or comment on this file!
+- Validate multiple Feeds at once
+- Compare a Feed at two different states
