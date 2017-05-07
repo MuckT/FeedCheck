@@ -7,7 +7,7 @@ Aim to build out to a more robust feed validation tool.
 - Unused Stops
 
 ### Feed Management Tools
-- Remove rows with matching values for search from file
+- Remove rows with matching values for a search term from a file
 - Return all rows for all files in Feed that match search term(s)
 - Return all rows for a file in a Feed that match search term(s)
 
