@@ -143,8 +143,73 @@ def write_to_file(s):
 	else:
 		pass
 		
+#Feed Validation Tools
+#Checks For Unused Stops by comparing the stop_times.txt & the stops.txt
+def check_unused():
+	stop_list = []
+	unused_stops = []
+	unused_stop_count = 0
+	try:
+		for row in Feed["stop_times.txt"]:
+			if row[indexer("stop_times.txt","stop_id")] not in stop_list:
+				stop_list.append(row[indexer("stop_times.txt","stop_id")])
+		for row in Feed["stops.txt"]:
+			if row[indexer("stops.txt","stop_id")] not in stop_list:
+				unused_stops.append(row)
+				unused_stop_count += 1
+		if unused_stop_count > 0:
+			print str(unused_stop_count) + " unused stops detected!"
+		return unused_stops
+	except:
+		print "check_unused failed!"
+		
+""" Feed statistics
+# Number of Agencies
+# Number of Routes
+# Number of trips
+# Number of stops
+# Number of stop times
+"""
+def feed_statistics():
+	agency_list = []
+	route_list = []
+	trip_list = []
+	stop_list = []
+	stop_times_list = []
+	agency_count = 0
+	route_count = 0
+	trip_count = 0
+	stop_count = 0
+	stop_times_count = 0
+	for row in Feed["agency.txt"]:
+		if row[indexer("agency.txt", "agency_name")] not in agency_list:
+			agency_count += 1
+			agency_list.append(row[indexer("agency.txt", "agency_name")])
+	for row in Feed["routes.txt"]:
+		if row[indexer("routes.txt", "route_id")] not in route_list:
+			route_count += 1
+			route_list.append(row[indexer("routes.txt", "route_id")])
+	for row in Feed["trips.txt"]:
+		if row[indexer("trips.txt", "trip_id")] not in trip_list:
+			trip_count += 1
+			trip_list.append(row[indexer("trips.txt", "trip_id")])
+	for row in Feed["stops.txt"]:
+		if row[indexer("stops.txt", "stop_id")] not in stop_list:
+			stop_count += 1
+			stop_list.append(row[indexer("stops.txt", "stop_id")])
+	
+	for row in Feed["stop_times.txt"]:
+		stop_times_count += 1
+			
+	print "Agency Count: " + str(agency_count), "Route Count: " + str(route_count), "Trip Count: " + str(trip_count), "Stop Count: " + str(stop_count), "Stop times: " + str(stop_times_count)
+	return {"Agency Count": str(agency_count), "Route Count": str(route_count), "Trip Count": str(trip_count), "Stop Count": str(stop_count), "Stop Times Count": str(stop_times_count)}
+
 #Initialize Fuctions / Feed		
 start()
+feed_statistics()
+check_unused()
+print timestamp()
+
 
 #Script Samples
 #Remove any Number of rows Based on Matching in One Field.
@@ -161,7 +226,7 @@ start()
 #write_to_file(file_search("routes.txt", "agency_id", "DTA"))
 #write_to_file(file_search("frequencies.txt", "headway_secs" , "600", "1800"))
 
-
+"""
 #Function Calls to Test Speed
 feed_search("AB")
 remove_rows("frequencies.txt", "headway_secs" , "1800")
@@ -171,7 +236,7 @@ file_search("stops.txt" , "stop_id" , "NANAA" , "BULLFROG" , "FUR_CREEK_RES")
 file_search("trips.txt" , "route_id" , "STBA" , "AB" , "BFC")
 
 print timestamp()# End Timer
-"""
+
 #Showing How Some of The Data in Feed Looks
 #Print First Five Rows of all Entries in Global Feed
 for item in Feed:
