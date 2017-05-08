@@ -3,6 +3,8 @@ import os
 import csv
 import time
 import calendar
+import codecs
+
 
 #Global
 Feed = {}
@@ -30,11 +32,11 @@ def file_walk(s):
 def to_dict(s):
 	f_dict = {}
 	f_list = []
-	tmp_list = csv.reader(open(s, "rb"))
+	tmp_list = codecs.open(s, "r", encoding="utf-8-sig")
 	for row in tmp_list:
 		f_list.append(row)
 	f_dict = {s: f_list}
-	#print f_dict[] # Check Top Line Values
+	#print f_dict[s][0] # Prints all Top Line Values in Feed
 	return f_dict
 	
 #Calls to_dict and Updates Global Feed
@@ -159,6 +161,8 @@ def check_unused():
 				unused_stop_count += 1
 		if unused_stop_count > 0:
 			print str(unused_stop_count) + " unused stops detected!"
+		else:
+			print "No Unused Stops."
 		return unused_stops
 	except:
 		print "check_unused failed!"
@@ -204,7 +208,7 @@ def feed_statistics():
 	print "Agency Count: " + str(agency_count), "Route Count: " + str(route_count), "Trip Count: " + str(trip_count), "Stop Count: " + str(stop_count), "Stop times: " + str(stop_times_count)
 	return {"Agency Count": str(agency_count), "Route Count": str(route_count), "Trip Count": str(trip_count), "Stop Count": str(stop_count), "Stop Times Count": str(stop_times_count)}
 
-#Initialize Fuctions / Feed		
+#Initialize Functions / Feed		
 start()
 feed_statistics()
 check_unused()
