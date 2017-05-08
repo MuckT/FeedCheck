@@ -185,24 +185,19 @@ def feed_statistics():
 	trip_count = 0
 	stop_count = 0
 	stop_times_count = 0
-	for row in Feed["agency.txt"]:
-		if row[indexer("agency.txt", "agency_name")] not in agency_list:
-			agency_count += 1
-			agency_list.append(row[indexer("agency.txt", "agency_name")])
-	for row in Feed["routes.txt"]:
-		if row[indexer("routes.txt", "route_id")] not in route_list:
-			route_count += 1
-			route_list.append(row[indexer("routes.txt", "route_id")])
-	for row in Feed["trips.txt"]:
-		if row[indexer("trips.txt", "trip_id")] not in trip_list:
-			trip_count += 1
-			trip_list.append(row[indexer("trips.txt", "trip_id")])
-	for row in Feed["stops.txt"]:
-		if row[indexer("stops.txt", "stop_id")] not in stop_list:
-			stop_count += 1
-			stop_list.append(row[indexer("stops.txt", "stop_id")])
-	
-	for row in Feed["stop_times.txt"]:
+	for row in Feed["agency.txt"][1:]:
+		agency_count += 1
+		agency_list.append(row[indexer("agency.txt", "agency_name")])
+	for row in Feed["routes.txt"][1:]:
+		route_count += 1
+		route_list.append(row[indexer("routes.txt", "route_id")])
+	for row in Feed["trips.txt"][1:]:
+		trip_count += 1
+		trip_list.append(row[indexer("trips.txt", "trip_id")])
+	for row in Feed["stops.txt"][1:]:
+		stop_count += 1
+		stop_list.append(row[indexer("stops.txt", "stop_id")])
+	for row in Feed["stop_times.txt"][1:]:
 		stop_times_count += 1
 			
 	print "Agency Count: " + str(agency_count), "Route Count: " + str(route_count), "Trip Count: " + str(trip_count), "Stop Count: " + str(stop_count), "Stop times: " + str(stop_times_count)
