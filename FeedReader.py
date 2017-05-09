@@ -32,7 +32,8 @@ def file_walk(s):
 def to_dict(s):
 	f_dict = {}
 	f_list = []
-	tmp_list = codecs.open(s, "r", encoding="utf-8-sig")
+	#tmp_list = codecs.open(s, "r", encoding="utf-8-sig") Causing problems with list comparison 
+	tmp_list = csv.reader(open(s, "rb"))
 	for row in tmp_list:
 		f_list.append(row)
 	f_dict = {s: f_list}
@@ -170,42 +171,54 @@ def check_unused():
 """ Feed statistics
 # Number of Agencies
 # Number of Routes
-# Number of trips
-# Number of stops
-# Number of stop times
+# Number of Trips
+# Number of Stops
+# Number of rows in stop_times.txt sans header
+# Number of unique shape_id's
 """
 def feed_statistics():
+	global Feed
 	agency_list = []
 	route_list = []
 	trip_list = []
 	stop_list = []
 	stop_times_list = []
+	shape_list = []
 	agency_count = 0
 	route_count = 0
 	trip_count = 0
 	stop_count = 0
 	stop_times_count = 0
+	shape_count = 0
 	for row in Feed["agency.txt"][1:]:
 		agency_count += 1
-		agency_list.append(row[indexer("agency.txt", "agency_name")])
+		agency_list.append(row[indexer("agency.txt","agency_name")])
 	for row in Feed["routes.txt"][1:]:
 		route_count += 1
-		route_list.append(row[indexer("routes.txt", "route_id")])
+		route_list.append(row[indexer("routes.txt","route_id")])
 	for row in Feed["trips.txt"][1:]:
 		trip_count += 1
-		trip_list.append(row[indexer("trips.txt", "trip_id")])
+		agency_list.append(row[indexer("trips.txt","trip_id")])
 	for row in Feed["stops.txt"][1:]:
 		stop_count += 1
-		stop_list.append(row[indexer("stops.txt", "stop_id")])
+		agency_list.append(row[indexer("stops.txt","stop_id")])
 	for row in Feed["stop_times.txt"][1:]:
 		stop_times_count += 1
-			
-	print "Agency Count: " + str(agency_count), "Route Count: " + str(route_count), "Trip Count: " + str(trip_count), "Stop Count: " + str(stop_count), "Stop times: " + str(stop_times_count)
-	return {"Agency Count": str(agency_count), "Route Count": str(route_count), "Trip Count": str(trip_count), "Stop Count": str(stop_count), "Stop Times Count": str(stop_times_count)}
+	try:
+		for row in Feed["shapes.txt"][1:]:
+			if row[indexer("shapes.txt", "shape_id")] not in shape_list:
+				shape_count += 1
+				shape_list.append(row[indexer("shapes.txt", "shape_id")])
+	except:
+		pass
+
+	return {"Agency Count": str(agency_count), "Route Count": str(route_count),
+	"Trip Count": str(trip_count), "Stop Count": str(stop_count),
+	"Stop Times Count": str(stop_times_count), "Shape Count": str(shape_count)}
 
 #Initialize Functions / Feed		
 start()
-feed_statistics()
+print feed_statistics()
 check_unused()
 print timestamp()
 
