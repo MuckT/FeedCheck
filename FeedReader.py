@@ -177,9 +177,10 @@ def check_unused():
 """ Feed statistics
 # Number of Agencies
 # Number of Routes
-# Number of trips
-# Number of stops
-# Number of stop times
+# Number of Trips
+# Number of Stops
+# Number of rows in stop_times.txt sans header
+# Number of unique shape_id's
 """
 def feed_statistics():
 	global Feed
