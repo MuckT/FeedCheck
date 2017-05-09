@@ -4,6 +4,7 @@ import csv
 import time
 import calendar
 import datetime
+import codecs
 from datetime import date, timedelta
 
 #Global
@@ -32,11 +33,12 @@ def file_walk(s):
 def to_dict(s):
 	f_dict = {}
 	f_list = []
+	#tmp_list = codecs.open(s, "r", encoding="utf-8-sig") #Caused some Problems
 	tmp_list = csv.reader(open(s, "rb"))
 	for row in tmp_list:
 		f_list.append(row)
 	f_dict = {s: f_list}
-	#print f_dict[] # Check Top Line Values
+	#print f_dict[s][0] # Prints all Top Line Values in Feed
 	return f_dict
 	
 #Calls to_dict and Updates Global Feed
@@ -116,12 +118,12 @@ def feed_search(*args):
 def timestamp():
 	timestamp = str(calendar.timegm(time.gmtime()))
 	return timestamp
-
+	
 #Returns a String of the Current Date	
 def current_date():
 	date = datetime.datetime.today().strftime('%Y%m%d')
-	return date
- 
+	return date	
+
 #Writes a list or a dict to File Folder	
 def write_to_file(s):
 	if isinstance(s, list) == True:
@@ -166,6 +168,8 @@ def check_unused():
 				unused_stop_count += 1
 		if unused_stop_count > 0:
 			print str(unused_stop_count) + " unused stops detected!"
+		else:
+			print "No Unused Stops."
 		return unused_stops
 	except:
 		print "check_unused failed!"
@@ -173,10 +177,9 @@ def check_unused():
 """ Feed statistics
 # Number of Agencies
 # Number of Routes
-# Number of Trips
-# Number of Stops
-# Number of rows in stop_times.txt sans header
-# Number of unique shape_id's
+# Number of trips
+# Number of stops
+# Number of stop times
 """
 def feed_statistics():
 	global Feed
@@ -240,8 +243,9 @@ start()
 print feed_statistics()
 print active_dates()
 #check_unused() #Takes a bit of time to complete
+print timestamp()# End Timer
 
-#Script Sample
+#Script Samples
 #Remove any Number of rows Based on Matching in One Field.
 #print remove_rows("fare_attributes.txt", "price", "1.25")
 
@@ -256,17 +260,17 @@ print active_dates()
 #write_to_file(file_search("routes.txt", "agency_id", "DTA"))
 #write_to_file(file_search("frequencies.txt", "headway_secs" , "600", "1800"))
 
-
+"""
 #Function Calls to Test Speed
-#feed_search("AB")
-#remove_rows("frequencies.txt", "headway_secs" , "1800")
-#remove_rows("frequencies.txt", "headway_secs" , "1800")
-#remove_rows("stops.txt", "stop_name", "King St and S West St", "Mt Vernon Ave and E Mason Ave", "King St Metro Station - Bay B")
-#file_search("stops.txt" , "stop_id" , "NANAA" , "BULLFROG" , "FUR_CREEK_RES")
-#file_search("trips.txt" , "route_id" , "STBA" , "AB" , "BFC")
+feed_search("AB")
+remove_rows("frequencies.txt", "headway_secs" , "1800")
+remove_rows("frequencies.txt", "headway_secs" , "1800")
+remove_rows("stops.txt", "stop_name", "King St and S West St", "Mt Vernon Ave and E Mason Ave", "King St Metro Station - Bay B")
+file_search("stops.txt" , "stop_id" , "NANAA" , "BULLFROG" , "FUR_CREEK_RES")
+file_search("trips.txt" , "route_id" , "STBA" , "AB" , "BFC")
 
 print timestamp()# End Timer
-"""
+
 #Showing How Some of The Data in Feed Looks
 #Print First Five Rows of all Entries in Global Feed
 for item in Feed:
@@ -275,11 +279,10 @@ for item in Feed:
 #Print First Row of all Entries in Global Feed
 for item in Feed:
 	print Feed[item][0]
-
+"""
 #This is fun glitch art. Prints out the contents of the file. Ctrl+ C for KeyboardInterrupt.
 #print Feed["stops.txt"][0:]
 #print Feed["trips.txt"][0:]
 #print Feed["stops.txt"][0:]
 #print Feed["agency.txt"][0:]
 #print Feed["stop_times.txt"][0:]
-"""
