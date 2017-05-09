@@ -3,8 +3,8 @@ import os
 import csv
 import time
 import calendar
-import codecs
-
+import datetime
+from datetime import date, timedelta
 
 #Global
 Feed = {}
@@ -32,12 +32,11 @@ def file_walk(s):
 def to_dict(s):
 	f_dict = {}
 	f_list = []
-	#tmp_list = codecs.open(s, "r", encoding="utf-8-sig") Causing problems with list comparison 
 	tmp_list = csv.reader(open(s, "rb"))
 	for row in tmp_list:
 		f_list.append(row)
 	f_dict = {s: f_list}
-	#print f_dict[s][0] # Prints all Top Line Values in Feed
+	#print f_dict[] # Check Top Line Values
 	return f_dict
 	
 #Calls to_dict and Updates Global Feed
@@ -118,6 +117,11 @@ def timestamp():
 	timestamp = str(calendar.timegm(time.gmtime()))
 	return timestamp
 
+#Returns a String of the Current Date	
+def current_date():
+	date = datetime.datetime.today().strftime('%Y%m%d')
+	return date
+ 
 #Writes a list or a dict to File Folder	
 def write_to_file(s):
 	if isinstance(s, list) == True:
@@ -162,8 +166,6 @@ def check_unused():
 				unused_stop_count += 1
 		if unused_stop_count > 0:
 			print str(unused_stop_count) + " unused stops detected!"
-		else:
-			print "No Unused Stops."
 		return unused_stops
 	except:
 		print "check_unused failed!"
@@ -216,14 +218,30 @@ def feed_statistics():
 	"Trip Count": str(trip_count), "Stop Count": str(stop_count),
 	"Stop Times Count": str(stop_times_count), "Shape Count": str(shape_count)}
 
+#Returns a List of dates ["YYYYMMDD", "YYYYMMDD",...]	
+def active_dates():
+	CurrentDate = current_date()
+	ActiveEndDates = []
+	DaysOfService = []
+	for row in Feed["calendar.txt"][0:]:
+		if row[indexer("calendar.txt", "end_date")][:8] > CurrentDate and row[indexer("calendar.txt", "start_date")][:8] < CurrentDate:
+			ActiveEndDates.append(row[indexer("calendar.txt", "end_date")][:8])
+	LastDate = max(ActiveEndDates)
+	d1 = datetime.date(int(CurrentDate[0:4]),int(CurrentDate[4:6]), int(CurrentDate[6:8]))
+	d2 = datetime.date(int(LastDate[0:4]), int(LastDate[4:6]), int(LastDate[6:8]))
+	diff = [d1 + timedelta(days=x) for x in range((d2-d1).days + 1)]
+	for item in diff:
+		date = item.strftime('%Y%m%d')
+		DaysOfService.append(date)
+	return DaysOfService
+	
 #Initialize Functions / Feed		
 start()
 print feed_statistics()
-check_unused()
-print timestamp()
+print active_dates()
+#check_unused() #Takes a bit of time to complete
 
-
-#Script Samples
+#Script Sample
 #Remove any Number of rows Based on Matching in One Field.
 #print remove_rows("fare_attributes.txt", "price", "1.25")
 
@@ -238,17 +256,17 @@ print timestamp()
 #write_to_file(file_search("routes.txt", "agency_id", "DTA"))
 #write_to_file(file_search("frequencies.txt", "headway_secs" , "600", "1800"))
 
-"""
+
 #Function Calls to Test Speed
-feed_search("AB")
-remove_rows("frequencies.txt", "headway_secs" , "1800")
-remove_rows("frequencies.txt", "headway_secs" , "1800")
-remove_rows("stops.txt", "stop_name", "King St and S West St", "Mt Vernon Ave and E Mason Ave", "King St Metro Station - Bay B")
-file_search("stops.txt" , "stop_id" , "NANAA" , "BULLFROG" , "FUR_CREEK_RES")
-file_search("trips.txt" , "route_id" , "STBA" , "AB" , "BFC")
+#feed_search("AB")
+#remove_rows("frequencies.txt", "headway_secs" , "1800")
+#remove_rows("frequencies.txt", "headway_secs" , "1800")
+#remove_rows("stops.txt", "stop_name", "King St and S West St", "Mt Vernon Ave and E Mason Ave", "King St Metro Station - Bay B")
+#file_search("stops.txt" , "stop_id" , "NANAA" , "BULLFROG" , "FUR_CREEK_RES")
+#file_search("trips.txt" , "route_id" , "STBA" , "AB" , "BFC")
 
 print timestamp()# End Timer
-
+"""
 #Showing How Some of The Data in Feed Looks
 #Print First Five Rows of all Entries in Global Feed
 for item in Feed:
@@ -257,10 +275,11 @@ for item in Feed:
 #Print First Row of all Entries in Global Feed
 for item in Feed:
 	print Feed[item][0]
-"""
+
 #This is fun glitch art. Prints out the contents of the file. Ctrl+ C for KeyboardInterrupt.
 #print Feed["stops.txt"][0:]
 #print Feed["trips.txt"][0:]
 #print Feed["stops.txt"][0:]
 #print Feed["agency.txt"][0:]
 #print Feed["stop_times.txt"][0:]
+"""
