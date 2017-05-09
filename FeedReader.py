@@ -3,8 +3,9 @@ import os
 import csv
 import time
 import calendar
+import datetime
 import codecs
-
+from datetime import date, timedelta
 
 #Global
 Feed = {}
@@ -32,7 +33,7 @@ def file_walk(s):
 def to_dict(s):
 	f_dict = {}
 	f_list = []
-	#tmp_list = codecs.open(s, "r", encoding="utf-8-sig") Causing problems with list comparison 
+	#tmp_list = codecs.open(s, "r", encoding="utf-8-sig") #Caused some Problems
 	tmp_list = csv.reader(open(s, "rb"))
 	for row in tmp_list:
 		f_list.append(row)
@@ -117,6 +118,11 @@ def feed_search(*args):
 def timestamp():
 	timestamp = str(calendar.timegm(time.gmtime()))
 	return timestamp
+	
+#Returns a String of the Current Date	
+def current_date():
+	date = datetime.datetime.today().strftime('%Y%m%d')
+	return date	
 
 #Writes a list or a dict to File Folder	
 def write_to_file(s):
@@ -216,12 +222,29 @@ def feed_statistics():
 	"Trip Count": str(trip_count), "Stop Count": str(stop_count),
 	"Stop Times Count": str(stop_times_count), "Shape Count": str(shape_count)}
 
+#Returns a List of dates ["YYYYMMDD", "YYYYMMDD",...]	
+def active_dates():
+	CurrentDate = current_date()
+	ActiveEndDates = []
+	DaysOfService = []
+	for row in Feed["calendar.txt"][0:]:
+		if row[indexer("calendar.txt", "end_date")][:8] > CurrentDate and row[indexer("calendar.txt", "start_date")][:8] < CurrentDate:
+			ActiveEndDates.append(row[indexer("calendar.txt", "end_date")][:8])
+	LastDate = max(ActiveEndDates)
+	d1 = datetime.date(int(CurrentDate[0:4]),int(CurrentDate[4:6]), int(CurrentDate[6:8]))
+	d2 = datetime.date(int(LastDate[0:4]), int(LastDate[4:6]), int(LastDate[6:8]))
+	diff = [d1 + timedelta(days=x) for x in range((d2-d1).days + 1)]
+	for item in diff:
+		date = item.strftime('%Y%m%d')
+		DaysOfService.append(date)
+	return DaysOfService
+	
 #Initialize Functions / Feed		
 start()
 print feed_statistics()
-check_unused()
-print timestamp()
-
+print active_dates()
+#check_unused() #Takes a bit of time to complete
+print timestamp()# End Timer
 
 #Script Samples
 #Remove any Number of rows Based on Matching in One Field.
