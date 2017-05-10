@@ -5,7 +5,9 @@ import time
 import calendar
 import datetime
 import codecs
-from datetime import date, timedelta
+import glob
+
+from chardet.universaldetector import UniversalDetector
 
 #Global
 Feed = {}
@@ -17,6 +19,7 @@ def start():
 	apath = raw_input("Insert location of GTFS Folder Unzipped... ")
 	print timestamp() # Start Timer
 	os.chdir(apath)
+	check_encodings(apath) #Toggle off once UTF-8-sig / UTF-8 Determination is made, can take awhile
 	Feed = to_feed(file_walk(apath))
 	return None
 	
@@ -28,13 +31,27 @@ def file_walk(s):
 			if f.endswith('.txt'):
 				txtFiles.append(f)
 	return txtFiles
-	
+
+# Detects encoding using chardet ("https://github.com/chardet/chardet")
+def check_encodings(s): 
+	detector = UniversalDetector()
+	for filename in glob.glob('*.txt'):
+		print filename.ljust(60),
+		detector.reset()
+		for line in file(filename, 'rb'):
+			detector.feed(line)
+			if detector.done: break
+		detector.close()
+		print detector.result
+		
 #Makes a Dictionary Entry e.g. "{stops.txt":[["...","...","..."]["...","...","..."]]}
+#Set proper encoding
 def to_dict(s):
 	f_dict = {}
 	f_list = []
-	#tmp_list = codecs.open(s, "r", encoding="utf-8-sig") #Caused some Problems
-	tmp_list = csv.reader(open(s, "rb"))
+	tmp_list = codecs.open(s, "rb", encoding="utf-8-sig") #Toggle on for UTF-8-sig
+	#tmp_list = codecs.open(s, "r", encoding="utf-8") #Toggle on for UTF-8
+	#tmp_list = csv.reader(open(s, "rb")) #Ascii
 	for row in tmp_list:
 		f_list.append(row)
 	f_dict = {s: f_list}
@@ -43,7 +60,6 @@ def to_dict(s):
 	
 #Calls to_dict and Updates Global Feed
 def to_feed(s):
-	global Feed
 	local_feed = {}
 	for item in s:
 		tmp_entry = to_dict(item)
@@ -62,15 +78,20 @@ def file_search(file, field, *args):
 	output = []
 	hit_list = []
 	try:
-		output.append(Feed[file][0]) #Retain Top Line
-		for arg in args:
-			hit_list.append(str(arg))
-		for row in Feed[file]:
-			if row[indexer(file,field)] in hit_list:
-				output.append(row)
+		if file in Feed:
+			#output.append(Feed[file][0]) #Retain Top Line
+			for arg in args:
+				hit_list.append(str(arg))
+			for row in Feed[file]:
+				if row[indexer(file,field)] in hit_list:
+					output.append(row)		
+			return [output, file]
+		else:
+			print "File Search in %s Failed" % file
+			pass
 	except:
 		print "File Search Failed"
-	return [output, file]
+		pass
 
 #Removes All Rows with Entries in a Fields that Match Args
 def remove_rows(file, field, *args):
@@ -85,9 +106,11 @@ def remove_rows(file, field, *args):
 				output.append(row)
 			else:
 				pass
+				
+		return [output, file]	
 	except:
 		print "Remove Failed"
-	return [output, file]
+		pass
 			
 def feed_search(*args):
 	global Feed
@@ -126,8 +149,15 @@ def current_date():
 
 #Writes a list or a dict to File Folder	
 def write_to_file(s):
-	if isinstance(s, list) == True:
-		print "Saving File!"
+	if isinstance(s, dict) == True:
+		print "Saving Files!"
+		for item in s:
+			if s[item] != []: # Prevents Writing Empty Files
+				filename = "%s_%s" % (timestamp(), item)
+				with open(filename, 'wb') as f:
+					writer = csv.writer(f)
+					writer.writerows(s[item][0:])
+	elif isinstance(s, list) == True:
 		try:
 			filename = "%s_%s.txt" % (timestamp(),str(s[1]))
 			with open(filename, 'wb') as f:
@@ -135,23 +165,10 @@ def write_to_file(s):
 				for row in s[0]:
 					writer.writerow(row)
 		except:
-			print "Save List to File Failed"
-			
-	elif isinstance(s, dict) == True:
-		print "Saving Files!"
-		try:
-			for item in s:
-				if s[item] != []: # Prevents Writing Empty Files
-					filename = "%s_%s" % (timestamp(), item)
-					with open(filename, 'wb') as f:
-						writer = csv.writer(f)
-						writer.writerows(s[item][0:])
-		except:
-			print "Save Dict to File Failed!"
-
+			pass
 	else:
-		pass
-		
+		pass		
+
 #Feed Validation Tools
 #Checks For Unused Stops by comparing the stop_times.txt & the stops.txt
 def check_unused():
@@ -177,10 +194,9 @@ def check_unused():
 """ Feed statistics
 # Number of Agencies
 # Number of Routes
-# Number of Trips
-# Number of Stops
-# Number of rows in stop_times.txt sans header
-# Number of unique shape_id's
+# Number of trips
+# Number of stops
+# Number of stop times
 """
 def feed_statistics():
 	global Feed
@@ -221,28 +237,10 @@ def feed_statistics():
 	return {"Agency Count": str(agency_count), "Route Count": str(route_count),
 	"Trip Count": str(trip_count), "Stop Count": str(stop_count),
 	"Stop Times Count": str(stop_times_count), "Shape Count": str(shape_count)}
-
-#Returns a List of dates ["YYYYMMDD", "YYYYMMDD",...]	
-def active_dates():
-	CurrentDate = current_date()
-	ActiveEndDates = []
-	DaysOfService = []
-	for row in Feed["calendar.txt"][0:]:
-		if row[indexer("calendar.txt", "end_date")][:8] > CurrentDate and row[indexer("calendar.txt", "start_date")][:8] < CurrentDate:
-			ActiveEndDates.append(row[indexer("calendar.txt", "end_date")][:8])
-	LastDate = max(ActiveEndDates)
-	d1 = datetime.date(int(CurrentDate[0:4]),int(CurrentDate[4:6]), int(CurrentDate[6:8]))
-	d2 = datetime.date(int(LastDate[0:4]), int(LastDate[4:6]), int(LastDate[6:8]))
-	diff = [d1 + timedelta(days=x) for x in range((d2-d1).days + 1)]
-	for item in diff:
-		date = item.strftime('%Y%m%d')
-		DaysOfService.append(date)
-	return DaysOfService
 	
 #Initialize Functions / Feed		
 start()
 print feed_statistics()
-print active_dates()
 #check_unused() #Takes a bit of time to complete
 print timestamp()# End Timer
 
