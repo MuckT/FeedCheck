@@ -7,7 +7,7 @@ Some scripts for modifying unzipped GTFS folders data using python.
 - ascii
 
 ### Supported Feed Checks
-- File type ecoding
+- File type encoding
 - Feed Summary
 - Unused Stops
 
