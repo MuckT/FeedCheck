@@ -19,7 +19,7 @@ def start():
 	apath = raw_input("Insert location of GTFS Folder Unzipped... ")
 	print timestamp() # Start Timer
 	os.chdir(apath)
-	#check_encodings(apath) #Toggle off once UTF-8-sig / UTF-8 Determination is made, can take awhile
+	check_encodings(apath) #Toggle off once UTF-8-sig / UTF-8 Determination is made, can take awhile
 	Feed = to_feed(file_walk(apath))
 	return None
 	
@@ -51,7 +51,7 @@ def to_dict(s):
 	f_list = []
 	#tmp_list = codecs.open(s, "rb", encoding="utf-8-sig") #Toggle on for UTF-8-sig
 	#tmp_list = codecs.open(s, "r", encoding="utf-8") #Toggle on for UTF-8
-	tmp_list = csv.reader(open(s, "rb")) #Ascii
+	tmp_list = csv.reader(open(s, "rb")) #Toggle on for ascii
 	for row in tmp_list:
 		f_list.append(row)
 	f_dict = {s: f_list}
@@ -71,29 +71,8 @@ def indexer(file, field):
 	topline = Feed[file][0]
 	loc = topline.index(field)
 	return loc
-"""	
+
 #Search File for all args / One or Many
-def file_search(file, field, *args):
-	global Feed
-	output = []
-	hit_list = []
-	try:
-		if file in Feed:
-			#output.append(Feed[file][0]) #Retain Top Line
-			for arg in args:
-				hit_list.append(str(arg))
-			for row in Feed[file]:
-				if row[indexer(file,field)] in hit_list:
-					output.append(row)		
-			return [output, file]
-		else:
-			print "File Search in %s Failed" % file
-			pass
-	except:
-		print "File Search Failed"
-		pass
-"""		
-#Removes All Rows with Entries in a Fields that Match Args
 def file_search(file, field, *args):
 	global Feed
 	output = []
