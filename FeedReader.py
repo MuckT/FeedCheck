@@ -237,7 +237,6 @@ def feed_statistics():
 	"Trip Count": str(trip_count), "Stop Count": str(stop_count),
 	"Stop Times Count": str(stop_times_count), "Shape Count": str(shape_count)}
 
-
 #Initialize Functions / Feed		
 start()
 print feed_statistics()
