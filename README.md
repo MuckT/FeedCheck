@@ -1,7 +1,11 @@
 # FeedCheck
 Some scripts for modifying unzipped GTFS folders data using python.
-- Short term goals: Build Feed Management Tools & Simple Validation compatable with multiple encoding.
-- Long term goals: GUI for feed creation, import existing feed and edit and save.
+- Short term goals
+-- Build Feed Management Tools
+-- Simple Validation compatable with multiple encoding.
+- Long term goals
+-- GUI for feed creation
+-- import existing feed and edit and save.
 
 ### Works with Multiple encodings
 - utf-8-sig
