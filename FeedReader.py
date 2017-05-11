@@ -19,7 +19,7 @@ def start():
 	apath = raw_input("Insert location of GTFS Folder Unzipped... ")
 	print timestamp() # Start Timer
 	os.chdir(apath)
-	check_encodings(apath) #Toggle off once UTF-8-sig / UTF-8 Determination is made, can take awhile
+	#check_encodings(apath) #Toggle off once UTF-8-sig / UTF-8 Determination is made, can take awhile
 	Feed = to_feed(file_walk(apath))
 	return None
 	
@@ -49,9 +49,9 @@ def check_encodings(s):
 def to_dict(s):
 	f_dict = {}
 	f_list = []
-	tmp_list = codecs.open(s, "rb", encoding="utf-8-sig") #Toggle on for UTF-8-sig
+	#tmp_list = codecs.open(s, "rb", encoding="utf-8-sig") #Toggle on for UTF-8-sig
 	#tmp_list = codecs.open(s, "r", encoding="utf-8") #Toggle on for UTF-8
-	#tmp_list = csv.reader(open(s, "rb")) #Ascii
+	tmp_list = csv.reader(open(s, "rb")) #Ascii
 	for row in tmp_list:
 		f_list.append(row)
 	f_dict = {s: f_list}
@@ -71,7 +71,7 @@ def indexer(file, field):
 	topline = Feed[file][0]
 	loc = topline.index(field)
 	return loc
-	
+"""	
 #Search File for all args / One or Many
 def file_search(file, field, *args):
 	global Feed
@@ -92,6 +92,26 @@ def file_search(file, field, *args):
 	except:
 		print "File Search Failed"
 		pass
+"""		
+#Removes All Rows with Entries in a Fields that Match Args
+def file_search(file, field, *args):
+	global Feed
+	output = []
+	hit_list = []
+	try:
+		#output.append(Feed[file][0]) #Retain Top Line
+		for arg in args:
+			hit_list.append(str(arg))
+		for row in Feed[file]:
+			if row[indexer(file,field)] in hit_list:
+				output.append(row)
+			else:
+				pass
+				
+		return [output, file]	
+	except:
+		print "Remove Failed"
+		pass		
 
 #Removes All Rows with Entries in a Fields that Match Args
 def remove_rows(file, field, *args):
@@ -150,22 +170,22 @@ def current_date():
 #Writes a list or a dict to File Folder	
 def write_to_file(s):
 	if isinstance(s, dict) == True:
-		print "Saving Files!"
+		print "It's a dict!"
 		for item in s:
 			if s[item] != []: # Prevents Writing Empty Files
 				filename = "%s_%s" % (timestamp(), item)
 				with open(filename, 'wb') as f:
 					writer = csv.writer(f)
 					writer.writerows(s[item][0:])
-	elif isinstance(s, list) == True:
-		try:
-			filename = "%s_%s.txt" % (timestamp(),str(s[1]))
-			with open(filename, 'wb') as f:
-				writer = csv.writer(f)
-				for row in s[0]:
-					writer.writerow(row)
-		except:
-			pass
+	elif isinstance(s, list) == True and s[0] != []: # Prevents Writing Empty Files
+			try:
+				filename = "%s_%s.txt" % (timestamp(),str(s[1]))
+				with open(filename, 'wb') as f:
+					writer = csv.writer(f)
+					for row in s[0]:
+						writer.writerow(row)
+			except:
+				print "Error Saving List!"
 	else:
 		pass		
 
@@ -237,11 +257,12 @@ def feed_statistics():
 	return {"Agency Count": str(agency_count), "Route Count": str(route_count),
 	"Trip Count": str(trip_count), "Stop Count": str(stop_count),
 	"Stop Times Count": str(stop_times_count), "Shape Count": str(shape_count)}
-	
+
+
 #Initialize Functions / Feed		
 start()
 print feed_statistics()
-#check_unused() #Takes a bit of time to complete
+check_unused()
 print timestamp()# End Timer
 
 #Script Samples
@@ -253,10 +274,10 @@ print timestamp()# End Timer
 #print file_search("trips.txt", "route_id", "AAMV")
 
 #write to file Writes "output_" + timestamp.csv to Working Directory / Feed Location
-#write_to_file(remove_rows("stop_times.txt", "trip_id", "CITY2", "CITY1"))
+#write_to_file(remove_rows("stop_times.txt", "trip_id", "0"))
 #write_to_file(remove_rows("frequencies.txt", "headway_secs" , "1800"))
 
-#write_to_file(file_search("routes.txt", "agency_id", "DTA"))
+#write_to_file(file_search("routes.txt", "agency_id", "148"))
 #write_to_file(file_search("frequencies.txt", "headway_secs" , "600", "1800"))
 
 """
