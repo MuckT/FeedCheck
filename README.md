@@ -1,6 +1,6 @@
 # FeedCheck
 For anaylsis and modifying unzipped GTFS folders data using python.
-Import FeedCheck into your scripts!
+Import FeedCheck into your scripts! Sample Use: https://imgur.com/a/bMY8U
 
 ### Works with Multiple encodings
 - utf-8-sig
