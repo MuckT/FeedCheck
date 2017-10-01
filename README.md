@@ -19,6 +19,7 @@ Import FeedCheck into your scripts! Sample Use: https://imgur.com/a/bMY8U
 
 ### Wish List
 - Short term goals
+  - Class based Structure
   - Build Feed Management Tools
   - Simple Validation compatable with multiple encoding.
 - Long term goals
