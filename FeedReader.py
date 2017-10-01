@@ -9,18 +9,21 @@ import glob
 
 from chardet.universaldetector import UniversalDetector
 
-#Global
+#Globals
 Feed = {}
+aPath = str()
 
 #Functions
 #Setting up working directory to_dict on all files in folder
 def start():
 	global Feed
-	apath = raw_input("Insert location of GTFS Folder Unzipped... ")
-	print timestamp() # Start Timer
-	os.chdir(apath)
-	check_encodings(apath) #Toggle off once UTF-8-sig / UTF-8 Determination is made, can take awhile
-	Feed = to_feed(file_walk(apath))
+	global aPath
+	userinput = raw_input("Insert location of GTFS Folder Unzipped... ")
+	aPath = userinput
+	os.chdir(aPath)
+	check_encodings(aPath) #Toggle off once UTF-8-sig / UTF-8 Determination is made, can take awhile
+	Feed = to_feed(file_walk(aPath))
+	print feed_statistics()
 	return None
 	
 #Finds all .txt Files in a Folder
@@ -34,7 +37,9 @@ def file_walk(s):
 
 # Detects encoding using chardet ("https://github.com/chardet/chardet")
 def check_encodings(s): 
+	global encodingList
 	detector = UniversalDetector()
+	encodingList = []
 	for filename in glob.glob('*.txt'):
 		print filename.ljust(60),
 		detector.reset()
@@ -42,23 +47,31 @@ def check_encodings(s):
 			detector.feed(line)
 			if detector.done: break
 		detector.close()
+		encodingList.append(detector.result)
 		print detector.result
 		
 #Makes a Dictionary Entry e.g. "{stops.txt":[["...","...","..."]["...","...","..."]]}
 #Set proper encoding
 def to_dict(s):
+	global encodingList
 	f_dict = {}
 	f_list = []
-	#tmp_list = codecs.open(s, "rb", encoding="utf-8-sig") #Toggle on for UTF-8-sig
-	#tmp_list = codecs.open(s, "r", encoding="utf-8") #Toggle on for UTF-8
-	tmp_list = csv.reader(open(s, "rb")) #Toggle on for ascii
+	if "ascii" in encodingList[0].values():
+		tmp_list = csv.reader(open(s, "rb")) #ascii
+	elif "utf-8-sig" in encodingList[0].values():
+		tmp_list = codecs.open(s, "rb", encoding="utf-8-sig") #UTF-8-sig
+	elif "utf-8" in encodingList[0].values():
+		tmp_list = codecs.open(s, "r", encoding="utf-8") #UTF-8
+	else:
+		print "encoding not recognized"
+		return None
 	for row in tmp_list:
 		f_list.append(row)
 	f_dict = {s: f_list}
 	#print f_dict[s][0] # Prints all Top Line Values in Feed
 	return f_dict
 	
-#Calls to_dict and Updates Global Feed
+#Calls to_dict and returns what becomes the Global Feed
 def to_feed(s):
 	local_feed = {}
 	for item in s:
@@ -89,7 +102,7 @@ def file_search(file, field, *args):
 				
 		return [output, file]	
 	except:
-		print "Remove Failed"
+		print "Search Failed"
 		pass		
 
 #Removes All Rows with Entries in a Fields that Match Args
@@ -105,7 +118,7 @@ def remove_rows(file, field, *args):
 				output.append(row)
 			else:
 				pass
-				
+		# Feed.update(file		
 		return [output, file]	
 	except:
 		print "Remove Failed"
@@ -237,11 +250,9 @@ def feed_statistics():
 	"Trip Count": str(trip_count), "Stop Count": str(stop_count),
 	"Stop Times Count": str(stop_times_count), "Shape Count": str(shape_count)}
 
+
 #Initialize Functions / Feed		
 start()
-print feed_statistics()
-check_unused()
-print timestamp()# End Timer
 
 #Script Samples
 #Remove any Number of rows Based on Matching in One Field.
