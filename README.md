@@ -1,6 +1,6 @@
 # FeedCheck
-Some scripts for modifying unzipped GTFS folders data using python.
-I like to run python in the terminal and then import FeedCheck.
+For anaylsis and modifying unzipped GTFS folders data using python.
+Import FeedCheck into your scripts!
 
 ### Works with Multiple encodings
 - utf-8-sig
