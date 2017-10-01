@@ -117,8 +117,7 @@ def remove_rows(file, field, *args):
 			if row[indexer(file,field)] not in remove_list:
 				output.append(row)
 			else:
-				pass
-		# Feed.update(file		
+				pass		
 		return [output, file]	
 	except:
 		print "Remove Failed"
