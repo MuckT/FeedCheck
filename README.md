@@ -19,11 +19,12 @@ Import FeedCheck into your scripts! Sample Use: https://imgur.com/a/bMY8U
 
 ### Wish List
 - Short term goals
-  - Class based Structure
-  - Build Feed Management Tools
-  - Simple Validation compatable with multiple encoding.
+  - Class based structure
+  - Build feed management tools
+  - Simple validation compatable with multiple encoding
+  - Run scripts modify feed then save a corrected version
 - Long term goals
-  - GUI for feed creation
+  - GUI for feed creation / editing
   - Import existing feed and edit and save.
   - Validate multiple Feeds at once
   - Compare a Feed at two different states
