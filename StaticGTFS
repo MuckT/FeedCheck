@@ -1,0 +1,123 @@
+#!/usr/bin/python
+import os
+import csv
+import time
+import calendar
+import datetime
+import codecs
+import glob
+
+from chardet.universaldetector import UniversalDetector
+
+class StaticGTFS:
+	"""A Static GTFS Feed as a Python Dictionary"""
+	def __init__(self, filepath):
+		self.Feed = {}
+		self.encodingList = []
+		# global aPath
+		# userinput = raw_input("Insert location of GTFS Folder Unzipped... ")
+		#aPath = userinput
+		os.chdir(filepath)
+		self.check_encodings(filepath) #Toggle off once UTF-8-sig / UTF-8 Determination is made, can take awhile
+		self.Feed = self.to_feed(self.file_walk(filepath))
+		print self.feed_statistics()
+		return None
+	
+	#Finds all .txt Files in a Folder
+	def file_walk(self, s):
+		txtFiles = []
+		for root, dirs, files in os.walk(s):
+			for f in files:
+				if f.endswith('.txt'):
+					txtFiles.append(f)
+		return txtFiles
+
+	# Detects encoding using chardet ("https://github.com/chardet/chardet")
+	def check_encodings(self, s): 
+		detector = UniversalDetector()
+		for filename in glob.glob('*.txt'):
+			print filename.ljust(60),
+			detector.reset()
+			for line in file(filename, 'rb'):
+				detector.feed(line)
+				if detector.done: break
+			detector.close()
+			self.encodingList.append(detector.result)
+			print detector.result
+			
+	#Makes a Dictionary Entry e.g. "{stops.txt":[["...","...","..."]["...","...","..."]]}
+	#Set proper encoding
+	def to_dict(self, s):
+		f_dict = {}
+		f_list = []
+		if "ascii" in self.encodingList[0].values():
+			tmp_list = csv.reader(open(s, "rb")) #ascii
+		elif "utf-8-sig" in self.encodingList[0].values() or "UTF-8-SIG" in self.encodingList[0].values() :
+			tmp_list = codecs.open(s, "rb", encoding="utf-8-sig") #UTF-8-sig
+		elif "utf-8" in self.encodingList[0].values():
+			tmp_list = codecs.open(s, "r", encoding="utf-8") #UTF-8
+		else:
+			print "encoding not recognized" 
+			#tmp_list = codecs.open(s, "rb", encoding="utf-8-sig") #UTF-8-sig
+			
+		for row in tmp_list:
+			f_list.append(row)
+		f_dict = {s: f_list}
+		#print f_dict[s][0] # Prints all Top Line Values in Feed
+		return f_dict
+		
+	#Calls to_dict and returns what becomes the Global Feed
+	def to_feed(self, s):
+		local_feed = {}
+		for item in s:
+			tmp_entry = self.to_dict(item)
+			local_feed.update(tmp_entry)
+		return local_feed 
+	
+	#Finds The location of the index in the top-line
+	def indexer(self, file, field):
+		topline = self.Feed[file][0]
+		loc = topline.index(field)
+		return loc
+
+	def feed_statistics(self):
+		global Feed
+		agency_list = []
+		route_list = []
+		trip_list = []
+		stop_list = []
+		stop_times_list = []
+		shape_list = []
+		agency_count = 0
+		route_count = 0
+		trip_count = 0
+		stop_count = 0
+		stop_times_count = 0
+		shape_count = 0
+		for row in self.Feed["agency.txt"][1:]:
+			agency_count += 1
+			agency_list.append(row[self.indexer("agency.txt","agency_name")])
+		for row in self.Feed["routes.txt"][1:]:
+			route_count += 1
+			route_list.append(row[self.indexer("routes.txt","route_id")])
+		for row in self.Feed["trips.txt"][1:]:
+			trip_count += 1
+			agency_list.append(row[self.indexer("trips.txt","trip_id")])
+		for row in self.Feed["stops.txt"][1:]:
+			stop_count += 1
+			agency_list.append(row[self.indexer("stops.txt","stop_id")])
+		for row in self.Feed["stop_times.txt"][1:]:
+			stop_times_count += 1
+		try:
+			for row in self.Feed["shapes.txt"][1:]:
+				if row[self.indexer("shapes.txt", "shape_id")] not in shape_list:
+					shape_count += 1
+					shape_list.append(row[self.indexer("shapes.txt", "shape_id")])
+		except:
+			pass
+
+		return {"Agency Count": str(agency_count), "Route Count": str(route_count),
+		"Trip Count": str(trip_count), "Stop Count": str(stop_count),
+		"Stop Times Count": str(stop_times_count), "Shape Count": str(shape_count)}
+    
+gtfs_00 = StaticGTFS(r"C:\f-dr5r-nyctsubway")
